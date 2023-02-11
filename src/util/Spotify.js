@@ -1,8 +1,7 @@
-const client_id = "036d6e0852654496aed923b3fab23ba3";
-const redirect_uri = "http://localhost:3000/";
+const client_id = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
+const redirect_uri = process.env.REACT_APP_REDIRECT_URL;
 
 const state = Math.floor(Math.random() * 0xfffff * 1000000000).toString(16);
-// console.log(state);
 
 localStorage.setItem("stateKey", state);
 const scope = "playlist-modify-public";
