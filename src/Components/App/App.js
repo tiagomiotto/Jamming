@@ -34,6 +34,9 @@ class App extends React.Component {
     ) {
       this.setState({
         playlistTracks: [...this.state.playlistTracks, track],
+        searchResults: this.state.searchResults.filter((trackToCheck) => {
+          return trackToCheck.id !== track.id;
+        }),
       });
     }
   }
@@ -43,6 +46,7 @@ class App extends React.Component {
       playlistTracks: this.state.playlistTracks.filter((trackToCheck) => {
         return trackToCheck.id !== track.id;
       }),
+      searchResults: [track, ...this.state.searchResults],
     });
   }
 
