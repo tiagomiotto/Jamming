@@ -5,6 +5,8 @@ import { SearchBar } from "../SearchBar/SearchBar";
 import { SearchResults } from "../SearchResults/SearchResults";
 import { Playlist } from "../Playlist/Playlist";
 
+import { Spotify } from "../../util/Spotify";
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -27,11 +29,14 @@ class App extends React.Component {
     this.search = this.search.bind(this);
   }
 
+  componentDidMount() {
+    Spotify.getAccessToken();
+  }
+
   addTrack(track) {
     if (
       this.state.playlistTracks.find((x) => x.id === track.id) === undefined
     ) {
-      console.log("new item");
       this.setState({
         playlistTracks: [...this.state.playlistTracks, track],
       });
@@ -59,8 +64,12 @@ class App extends React.Component {
     console.log(trackUris);
   }
 
-  search(searchTerm) {
-    console.log(searchTerm);
+  async search(searchTerm) {
+    let spotifySearchResults = await Spotify.search(searchTerm);
+
+    this.setState({
+      searchResults: spotifySearchResults,
+    });
   }
 
   render() {
