@@ -179,7 +179,7 @@ const Spotify = (function () {
         }),
       });
 
-      const playlistJSON = await response.json();
+      return await response.json();
     } catch (error) {
       console.log(error);
     }
