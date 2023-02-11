@@ -38,12 +38,14 @@ const Spotify = (function () {
     }
   };
 
-  const search = async function (term, tracksInPlaylist) {
-    if (userAccessToken === "") {
-      getAccessToken();
+  const searchSpotify = async function (term, limit, offset) {
+    let searchUrl = "https://api.spotify.com/v1/search?type=track&q=" + term;
+    if (limit !== undefined) {
+      searchUrl = searchUrl + `&limit=${limit}`;
     }
-
-    const searchUrl = "https://api.spotify.com/v1/search?type=track&q=" + term;
+    if (offset !== undefined) {
+      searchUrl = searchUrl + `&offset=${offset}`;
+    }
 
     try {
       const response = await fetch(searchUrl, {
@@ -65,6 +67,20 @@ const Spotify = (function () {
         uri: track.uri,
       }));
 
+      return searchResults;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const search = async function (term, tracksInPlaylist) {
+    if (userAccessToken === "") {
+      getAccessToken();
+    }
+
+    try {
+      const searchResults = await searchSpotify(term);
+
       if (tracksInPlaylist === undefined) {
         return searchResults;
       }
@@ -82,29 +98,10 @@ const Spotify = (function () {
 
       // Search again until we have no items from the playlist
       while (currentLength !== startingLength) {
-        const searchUrl =
-          "https://api.spotify.com/v1/search?type=track&q=" +
-          term +
-          `&limit=${startingLength - currentLength}&offset=${offset}`;
-        const response = await fetch(searchUrl, {
-          method: "get",
-          // mode: "no-cors",
-          headers: {
-            "content-type": "application/json",
-            Authorization: `Bearer ${userAccessToken}`,
-          },
-        });
-
-        const searchResultsJson = await response.json();
-
-        const intermediateResults = searchResultsJson.tracks.items.map(
-          (track) => ({
-            id: track.id,
-            name: track.name,
-            artist: track.artists[0].name,
-            album: track.album.name,
-            uri: track.uri,
-          })
+        const intermediateResults = await searchSpotify(
+          term,
+          startingLength - currentLength,
+          offset
         );
 
         filteredSearchResults = filteredSearchResults.concat(
