@@ -12,14 +12,9 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      searchResults: [
-        { id: 1, name: "Tiago", artist: "Tiago", album: "Best album" },
-        { id: 2, name: "2", artist: "Tiago", album: "Best album" },
-      ],
+      searchResults: [],
       playlistName: "My playlist",
-      playlistTracks: [
-        { id: 1, name: "Tiago", artist: "Tiago", album: "Best album" },
-      ],
+      playlistTracks: [],
     };
 
     this.addTrack = this.addTrack.bind(this);
@@ -61,7 +56,7 @@ class App extends React.Component {
     let trackUris = this.state.playlistTracks.map((track) => {
       return "spotify:track:" + track.id;
     });
-    console.log(trackUris);
+    Spotify.savePlaylist(this.state.playlistName, trackUris);
   }
 
   async search(searchTerm) {
