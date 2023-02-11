@@ -38,7 +38,7 @@ const Spotify = (function () {
     }
   };
 
-  const search = async function (term) {
+  const search = async function (term, tracksInPlaylist) {
     if (userAccessToken === "") {
       getAccessToken();
     }
@@ -65,7 +65,62 @@ const Spotify = (function () {
         uri: track.uri,
       }));
 
-      return searchResults;
+      if (tracksInPlaylist === undefined) {
+        return searchResults;
+      }
+
+      // Check if the search results present any items from the playlist
+      let filteredSearchResults = searchResults.filter((track) => {
+        return !tracksInPlaylist.some((element) => {
+          return element.id === track.id;
+        });
+      });
+
+      let currentLength = filteredSearchResults.length;
+      let startingLength = searchResults.length;
+      let offset = startingLength;
+
+      // Search again until we have no items from the playlist
+      while (currentLength !== startingLength) {
+        const searchUrl =
+          "https://api.spotify.com/v1/search?type=track&q=" +
+          term +
+          `&limit=${startingLength - currentLength}&offset=${offset}`;
+        const response = await fetch(searchUrl, {
+          method: "get",
+          // mode: "no-cors",
+          headers: {
+            "content-type": "application/json",
+            Authorization: `Bearer ${userAccessToken}`,
+          },
+        });
+
+        const searchResultsJson = await response.json();
+
+        const intermediateResults = searchResultsJson.tracks.items.map(
+          (track) => ({
+            id: track.id,
+            name: track.name,
+            artist: track.artists[0].name,
+            album: track.album.name,
+            uri: track.uri,
+          })
+        );
+
+        filteredSearchResults = filteredSearchResults.concat(
+          intermediateResults.filter((track) => {
+            return !tracksInPlaylist.some((element) => {
+              return element.id === track.id;
+            });
+          })
+        );
+        console.log(filteredSearchResults);
+
+        currentLength = filteredSearchResults.length;
+        offset = offset + intermediateResults.length;
+      }
+
+      return filteredSearchResults;
     } catch (error) {
       console.log(error);
     }
